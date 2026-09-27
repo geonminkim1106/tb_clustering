@@ -101,7 +101,7 @@ if __name__ == '__main__':
     ablation_modes = ['ICH', 'CCH', 'BOTH']
 
     for mode in ablation_modes:
-        print(f"🚀 Starting {mode}-Only Pretraining ({epochs} Epochs)")
+        print(f"Starting {mode}-Only Pretraining ({epochs} Epochs)")
         
         # Reinitialize model and optimizer for each mode to ensure a clean slate
         model = TCL_Xception(feature_dim=128, num_clusters=512).to(device)
