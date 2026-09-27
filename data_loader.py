@@ -1,128 +1,50 @@
-###
-#Patient level split & verification
+import os
 import pandas as pd
-from sklearn.model_selection import GroupShuffleSplit
-
-df = pd.read_csv(r"C:\Users\geonm\OneDrive\Desktop\Data_Entry_2017.csv")
-
-# 환자 ID(Patient ID)가 쪼개지지 않도록 Train/Val 분할
-gss = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
-train_idx, val_idx = next(gss.split(df, groups=df['Patient ID']))
-
-train_df = df.iloc[train_idx]
-val_df = df.iloc[val_idx]
-
-print(f"Total Patients: {df['Patient ID'].nunique()}")
-print(f"Train Patients: {train_df['Patient ID'].nunique()} | Val Patients: {val_df['Patient ID'].nunique()}")
-print("\nTrain View Position (AP/PA) Distribution:\n", train_df['View Position'].value_counts())
-
-
-###
-#CXR weak/strong augmentation
-
+import torch
+from torch.utils.data import Dataset
 import torchvision.transforms as T
 from PIL import Image
 
-# 흉부 X-ray 특성을 고려한 변형 (과도한 기하학적 왜곡 배제)
+# Weak augmentation: Minimal geometric distortion tailored for Chest X-rays
 weak_transform = T.Compose([
-    T.Resize((224, 224)),
-    T.RandomAffine(degrees=5, translate=(0.02, 0.02)),
-    T.ToTensor()
+    T.Resize((224, 224)),                                 # Resize to standard input dimension
+    T.RandomAffine(degrees=5, translate=(0.02, 0.02)),    # Slight rotation and translation to simulate patient positioning
+    T.ToTensor()                                          # Convert PIL image to PyTorch tensor
 ])
 
+# Strong augmentation: Designed to prevent the loss of peripheral lung lesions
 strong_transform = T.Compose([
-    T.Resize((256, 256)),
-    # 폐 가장자리(Peripheral) 병변 보존을 위해 scale 하한선을 0.8로 방어
-    T.RandomResizedCrop(224, scale=(0.8, 1.0)),
-    T.RandomApply([T.GaussianBlur(kernel_size=3)], p=0.5),
-    T.RandomApply([T.ColorJitter(brightness=0.2, contrast=0.2)], p=0.5),
+    T.Resize((256, 256)),                                 # Scale up slightly before cropping
+    # CRITICAL: Bounding scale to (0.8, 1.0) ensures critical lung boundaries are not cropped out
+    T.RandomResizedCrop(224, scale=(0.8, 1.0)),           
+    T.RandomApply([T.GaussianBlur(kernel_size=3)], p=0.5), # Apply Gaussian blur with 50% probability
+    T.RandomApply([T.ColorJitter(brightness=0.2, contrast=0.2)], p=0.5), # Simulate different X-ray exposures
     T.ToTensor()
 ])
-
-###
-#Two-view dataset & Dataloader
-import torch
-from torch.utils.data import Dataset, DataLoader
-import os
 
 class CXRContrastiveDataset(Dataset):
+    """
+    Custom Dataset for Contrastive Learning.
+    Returns two augmented views (weak and strong) of the same image.
+    """
     def __init__(self, dataframe, image_dir, weak_tf, strong_tf):
-        self.df = dataframe.reset_index(drop=True)
-        self.image_dir = image_dir
-        self.weak_tf = weak_tf
-        self.strong_tf = strong_tf
+        self.df = dataframe.reset_index(drop=True)        # Reset index to avoid out-of-bounds errors
+        self.image_dir = image_dir                        # Directory containing the raw images
+        self.weak_tf = weak_tf                            # Weak transformation pipeline
+        self.strong_tf = strong_tf                        # Strong transformation pipeline
 
     def __len__(self):
-        return len(self.df)
+        return len(self.df)                               # Return total number of samples
 
     def __getitem__(self, idx):
-        img_name = self.df.loc[idx, 'Image Index']
-        img_path = os.path.join(self.image_dir, img_name)
+        img_name = self.df.loc[idx, 'Image Index']        # Retrieve filename from dataframe
+        img_path = os.path.join(self.image_dir, img_name) # Construct full image path
 
-        # Xception 입력 규격에 맞추어 흑백을 3채널(RGB)로 변환
+        # Convert grayscale X-ray to 3-channel RGB to match Xception's expected input shape
         image = Image.open(img_path).convert('RGB')
 
+        # Generate two different augmented views for contrastive learning
         view_1 = self.weak_tf(image)
         view_2 = self.strong_tf(image)
 
         return view_1, view_2
-
-
-###
-import matplotlib.pyplot as plt
-import os
-
-def visualize_views(view1_batch, view2_batch, num_samples=4):
-    fig, axes = plt.subplots(num_samples, 2, figsize=(8, 4 * num_samples))
-    for i in range(num_samples):
-        # 파이토치 텐서(C, H, W)를 matplotlib 형식(H, W, C)으로 변환
-        img1 = view1_batch[i].permute(1, 2, 0).numpy()
-        img2 = view2_batch[i].permute(1, 2, 0).numpy()
-
-        axes[i, 0].imshow(img1)
-        axes[i, 0].set_title(f"Sample {i+1}: Weak Aug")
-        axes[i, 0].axis('off')
-
-        axes[i, 1].imshow(img2)
-        axes[i, 1].set_title(f"Sample {i+1}: Strong Aug")
-        axes[i, 1].axis('off')
-
-    plt.tight_layout()
-    plt.show()
-
-# 윈도우 다중 프로세싱 보호 블록 추가
-if __name__ == '__main__':
-    # 윈도우 다중 프로세싱 보호 블록 추가
-    if __name__ == '__main__':
-        image_dir = r"C:\Users\geonm\Downloads\images_001\images"
-
-        # 핵심: 로컬 폴더에 실제로 존재하는 이미지 파일만 데이터프레임에서 필터링
-        existing_files = set(os.listdir(image_dir))
-        filtered_train_df = train_df[train_df['Image Index'].isin(existing_files)].reset_index(drop=True)
-
-        print(f"실제 로컬에 존재하는 훈련용 이미지 수: {len(filtered_train_df)}장")
-
-        if len(filtered_train_df) == 0:
-            print("지정된 폴더에 이미지 파일이 없습니다. 경로를 확인해주세요.")
-        else:
-            # 현재 다운받은 이미지 수에 맞춰 배치 사이즈 자동 조절 (32장보다 적어도 에러 안 나게 방어)
-            batch_size = min(32, len(filtered_train_df))
-
-            # DataLoader 인스턴스화 및 Forward Pass 점검
-            train_dataset = CXRContrastiveDataset(
-                dataframe=filtered_train_df,
-                image_dir=image_dir,
-                weak_tf=weak_transform,
-                strong_tf=strong_transform
-            )
-
-            # num_workers=4가 안전하게 작동함
-            train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
-
-            # 배치 추출
-            view_1_batch, view_2_batch = next(iter(train_loader))
-            print(f"View 1 Batch Shape: {view_1_batch.shape}")
-            print(f"View 2 Batch Shape: {view_2_batch.shape}")
-
-            # 시각화 코드 실행 (가져온 이미지 개수가 4장보다 적을 경우를 대비)
-            visualize_views(view_1_batch, view_2_batch, num_samples=min(4, batch_size))
