@@ -1,6 +1,6 @@
 # TCL-CXR
 
-** Independent Research Project
+-Independent Research Project
 
 A self-supervised medical imaging project investigating whether Twin Contrastive Learning improves label-efficient tuberculosis detection from chest X-rays.
 
