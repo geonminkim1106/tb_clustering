@@ -71,8 +71,8 @@ class TCLLoss(nn.Module):
 
 if __name__ == '__main__':
     # Define paths (Adjust to your local or cloud environment)
-    csv_path = "/content/drive/MyDrive/TB_data/NIH/Data_Entry_2017.csv"
-    image_dir = "/content/drive/MyDrive/TB_data/NIH/images"
+    csv_path = "/content/drive/MyDrive/TB_data/Data_Entry_2017.csv"
+    image_dir = "/content/drive/MyDrive/TB_data/images_001/images"
     save_dir = "/content/drive/MyDrive/TB_data/"
 
     # Hyperparameters
