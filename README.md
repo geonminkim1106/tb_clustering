@@ -30,7 +30,7 @@ Can the Twin Contrastive Learning framework, originally developed for unlabeled 
 | Shenzhen         | TB fine-tuning          | 662     | Completed |
 | Montgomery       | Cross-domain evaluation | 138     | Planned |
 
-- Data Curation: The NIH ChestX-ray14 dataset was first split at the patient level to prevent data leakage. AP/PA-view radiographs were selected from the training split, and a randomly sampled subset of 4,005 images was utilized for SSL pretraining under the available computational budget.
+- Data Curation: The NIH ChestX-ray14 dataset was first split at the patient level to prevent data leakage. After filtering for AP/PA-view radiographs from the training split, a randomly sampled subset of 4,005 images was utilized for SSL pretraining under the available computational budget.
   
 ### Methodology
 The implementation follows the CGRclust framework proposed by Alipour et al. (2024), adapting its Twin Contrastive Learning (TCL) architecture—including the Instance-level Contrastive Head (ICH) and Cluster-level Contrastive Head (CCH)—from DNA sequence clustering to chest X-ray tuberculosis classification in PyTorch. This project focuses on systematically evaluating the framework under label-efficient medical imaging settings.
@@ -164,4 +164,4 @@ python gradcam_vis.py
 
 ## 8. References
 1. Alipour, F., Hill, K. A., & Kari, L. (2024). CGRclust: Chaos Game Representation for twin contrastive clustering of unlabelled DNA sequences. BMC Genomics, 25, Article 1214. https://doi.org/10.1186/s12864-024-11135-y
-2. Alipour, F. (2024). https://github.com/fatemehalipour/CGRclust (implementation reference).
+2. CGRclust GitHub repository (implementation reference): https://github.com/fatemehalipour/CGRclust 
