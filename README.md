@@ -75,7 +75,7 @@ I decoupled the loss function to train three separate pre-trained models for 50 
 
 ### The Synergy of ICH and CCH
 The experimental results suggest that combining both objectives produces more stable representations.
-- The CCH Collapse: When pre-training with CCH alone, the model failed to extract meaningful features, resulting in an immediate mathematical collapse (Loss converging to ln(1024) ≒ 6.93). Although CCH-Only achieved a relatively high AUROC during fine-tuning, its substantially lower F1-score and higher variance suggest that the learned representation did not translate into consistently balanced classification performance. This discrepancy suggests that AUROC alone can overestimate representation quality, whereas F1 and variance reveal instability under class-imbalanced low-data conditions.
+- The CCH Collapse: When pre-training with CCH alone, the model exhibited an immediate mathematical collapse from the first epoch, with the loss plateauing at ln(1024)≈6.93. This suggests that the cluster-level objective alone failed to provide a meaningful optimization signal for representation learning. Although CCH-Only achieved a relatively high AUROC during downstream fine-tuning, its substantially lower F1-score and higher variance (±0.0621) suggest that the resulting feature space was degenerate and unlikely to support reliable clinical decision-making.
 - TCL_Full Superiority: The ICH provides the essential baseline feature space, while CCH acts as a regularizer that groups similar pathologies.
 
 ### Visual Explainability & Shortcut Learning (Grad-CAM)
