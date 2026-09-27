@@ -93,13 +93,13 @@ Conclusion: High AUROC/F1 scores do not guarantee clinical reliability. This val
 ### Quick Start
 
 ```bash
-# Pretraining
-python pretrain_ablation.py --mode both
+# 1. Pretraining (Runs ICH, CCH, and BOTH sequentially for 50 epochs)
+python pretrain_ablation.py
 
-# Fine-tuning
-python finetune_ablation.py --label_fraction 0.1 --seed 42
+# 2. Fine-tuning (Evaluates 10% data across 3 random seeds automatically)
+python finetune_ablation.py
 
-# Grad-CAM
+# 3. Grad-CAM Visualization (Generates Heatmaps)
 python gradcam_vis.py
 
 ```
