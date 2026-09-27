@@ -49,13 +49,13 @@ I decoupled the loss function to train three separate pre-trained models for 50 
 | Data Fraction | Model               | AUROC (Mean ± Std) | F1-Score (Mean ± Std) |
 | ---           | ---                 | ---                | ---             |
 | 10%           | Baseline (ImageNet) | 0.8422 ± 0.0138    | 0.7139 ± 0.0627 |
-|               | TCL (Ours)          | 0.7729 ± 0.0316    | 0.6639 ± 0.0276 |
+|               | TCL (This Implementation)          | 0.7729 ± 0.0316    | 0.6639 ± 0.0276 |
 | 25%           | Baseline (ImageNet) | 0.8740 ± 0.0153    | 0.7971 ± 0.0131 |
-|               | TCL (Ours)          | 0.8038 ± 0.0224    | 0.7638 ± 0.0227 |
+|               | TCL (This Implementation)          | 0.8038 ± 0.0224    | 0.7638 ± 0.0227 |
 | 50%           | Baseline (ImageNet) | 0.8938 ± 0.0052    | 0.8311 ± 0.0050 |
-|               | TCL (Ours)          | 0.8756 ± 0.0132    | 0.8116 ± 0.0048 |
+|               | TCL (This Implementation)          | 0.8756 ± 0.0132    | 0.8116 ± 0.0048 |
 | 100%          | Baseline (ImageNet) | 0.9179 ± 0.0029    | 0.8563 ± 0.0084 |
-|               | TCL (Ours)          | 0.9186 ± 0.0153    | 0.8397 ± 0.0125 |
+|               | TCL (This Implementation)          | 0.9186 ± 0.0153    | 0.8397 ± 0.0125 |
 
 <p align="center">
   <img src="assets/images/performance_curve.png" width="650">
@@ -74,7 +74,7 @@ I decoupled the loss function to train three separate pre-trained models for 50 
 ## 4. Interpretation & Discussion
 
 ### The Synergy of ICH and CCH
-The experiments indicate that combining both objectives produces more stable representations.
+The experimental results suggests that combining both objectives produces more stable representations.
 - The CCH Collapse: When pre-training with CCH alone, the model failed to extract meaningful features, resulting in an immediate mathematical collapse (Loss converging to ln(1024) ≒ 6.93). Although CCH-Only achieved a relatively high AUROC during fine-tuning, its substantially lower F1-score and higher variance suggest that the learned representation did not translate into consistently balanced classification performance. This discrepancy suggests that AUROC alone can overestimate representation quality, whereas F1 and variance reveal instability under class-imbalanced low-data conditions.
 - TCL_Full Superiority: The ICH provides the essential baseline feature space, while CCH acts as a regularizer that groups similar pathologies.
 
@@ -94,7 +94,7 @@ Despite the TCL_Full model achieving the most stable classification metrics, Gra
 </tr>
 </table>
 
-Heatmap analysis revealed that the model frequently localized its attention on the lung parenchyma where actual TB lesions reside. Instead, it relied heavily on two shortcut patterns:
+Heatmap analysis revealed that the model frequently localized its attention on the central heart shadow or the external image boundaries instead of the lung parenchyma where actual TB lesions reside.
 1. Central Bias: Over-focusing on the heart shadow (as seen in the left image).
 2. Boundary Bias: Fixating on the clavicle or external black borders (as seen in the right image).
 
@@ -122,7 +122,7 @@ TCL-CXR/
 └── README.md
 ```
 
-## 7. Future Work
+## 6. Future Work
 
 Planned extensions of this project include:
 
@@ -131,7 +131,7 @@ Planned extensions of this project include:
 - UMAP-based representation analysis across clinical metadata.
 - Comparison with additional SSL baselines such as MoCo v2.
 
-## 8. Reproducibility
+## 7. Reproducibility
 
 ### Environment
 - Python 3.11
