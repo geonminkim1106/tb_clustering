@@ -1,4 +1,7 @@
-# TCL-CXR: Twin-Contrastive Learning for Tuberculosis Classification in Low-Data Regimes
+# TCL-CXR
+
+Independent Research Project
+
 A self-supervised medical imaging project investigating whether Twin Contrastive Learning improves label-efficient tuberculosis detection from chest X-rays.
 
 ## 1. Experimental Intent & Motivation
@@ -22,7 +25,11 @@ Can Twin Contrastive Learning improve label-efficient tuberculosis detection fro
 
 ### Methodology
 - Backbone: Xception (via timm library).
-- Domain-Specific Augmentation: Custom data augmentation pipeline preventing extreme geometric distortions (e.g., RandomResizedCrop scale bounded to 0.8-1.0 to preserve peripheral lesions).
+- Domain-Specific Augmentation: Custom data augmentation pipeline preventing extreme geometric distortions
+  - Rotation & Translation: RandomAffine(degrees=5, translate=(0.02, 0.02)) to simulate slight patient positioning shifts.
+  - Lesion Preservation Crop: RandomResizedCrop(scale: 0.8–1.0) strictly bounded to prevent cutting out peripheral lung nodules.
+  - Exposure Simulation: ColorJitter(brightness=0.2, contrast=0.2, p=0.5) applied with a 50% probability.
+  - Sensor Noise Simulation: GaussianBlur(kernel_size=3, p=0.5) applied with a 50% probability.
 - Multi-Seed Validation: All downstream evaluations are cross-validated across 3 random seeds (42, 77, 123) to observe decision boundary variance.
 
 ### Ablation Strategy
@@ -56,8 +63,8 @@ Analysis: While ImageNet achieved higher mean performance in most low-label sett
 ## 4. Interpretation & Discussion
 
 ### The Synergy of ICH and CCH
-Our experiments indicate that combining both objectives produces more stable representations.
-- The CCH Collapse: When pre-training with CCH alone, the model failed to extract meaningful features, resulting in an immediate mathematical collapse (Loss converging to ln(1024) ≒ 6.93). Although CCH-Only achieved a relatively high AUROC during fine-tuning, its substantially lower F1-score and higher variance suggest that the learned representation did not translate into consistently balanced classification performance.
+The experiments indicate that combining both objectives produces more stable representations.
+- The CCH Collapse: When pre-training with CCH alone, the model failed to extract meaningful features, resulting in an immediate mathematical collapse (Loss converging to ln(1024) ≒ 6.93). Although CCH-Only achieved a relatively high AUROC during fine-tuning, its substantially lower F1-score and higher variance suggest that the learned representation did not translate into consistently balanced classification performance. This discrepancy suggests that AUROC alone can overestimate representation quality, whereas F1 and variance reveal instability under class-imbalanced low-data conditions.
 - TCL_Full Superiority: The ICH provides the essential baseline feature space, while CCH acts as a regularizer that groups similar pathologies.
 
 ### Visual Explainability & Shortcut Learning (Grad-CAM)
@@ -82,7 +89,23 @@ Heatmap analysis revealed that the model rarely localized its attention on the l
 
 Conclusion: High AUROC/F1 scores do not guarantee clinical reliability. This validates that in extremely low-data regimes (10%), TCL provides stability but is still vulnerable to Shortcut Learning. Future work must evaluate whether lung-field constraints (e.g., semantic segmentation masks) could guide the model's attention while preserving label efficiency.
 
-## 5. Reproducibility
+## 5. Repository Structure
+```text
+TCL-CXR/
+├── assets/
+│   └── images/
+│       ├── pipeline.png
+│       ├── performance_curve.png
+│       ├── gradcam_central_bias.png
+│       └── gradcam_boundary_bias.png
+├── data_loader.py
+├── model.py
+├── pretrain_ablation.py
+├── finetune_ablation.py
+├── gradcam_vis.py
+└── README.md
+
+## 6. Reproducibility
 
 ### Environment
 - Python 3.11
