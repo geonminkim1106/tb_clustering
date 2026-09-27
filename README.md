@@ -94,7 +94,7 @@ Despite the TCL_Full model achieving the most stable classification metrics, Gra
 </tr>
 </table>
 
-Heatmap analysis revealed that the model rarely localized its attention on the lung parenchyma where actual TB lesions reside. Instead, it relied heavily on two shortcut patterns:
+Heatmap analysis revealed that the model frequently localized its attention on the lung parenchyma where actual TB lesions reside. Instead, it relied heavily on two shortcut patterns:
 1. Central Bias: Over-focusing on the heart shadow (as seen in the left image).
 2. Boundary Bias: Fixating on the clavicle or external black borders (as seen in the right image).
 
@@ -118,6 +118,7 @@ TCL-CXR/
 ├── pretrain_ablation.py
 ├── finetune_ablation.py
 ├── gradcam_vis.py
+├── requirements.txt
 └── README.md
 ```
 
@@ -141,6 +142,9 @@ Planned extensions of this project include:
 ### Quick Start
 
 ```bash
+# 0. Install dependencies
+pip install -r requirements.txt
+
 # 1. Pretraining (Runs ICH, CCH, and BOTH sequentially for 50 epochs)
 python pretrain_ablation.py
 
