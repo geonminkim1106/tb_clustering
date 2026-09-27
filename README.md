@@ -1,4 +1,4 @@
-<img width="1239" height="715" alt="image" src="https://github.com/user-attachments/assets/bfcb9e65-ca1c-4f50-84f3-44498474a01e" /># TCL-CXR: Twin-Contrastive Learning for Tuberculosis Classification in Low-Data Regimes
+# TCL-CXR: Twin-Contrastive Learning for Tuberculosis Classification in Low-Data Regimes
 A self-supervised medical imaging project investigating whether Twin Contrastive Learning improves label-efficient tuberculosis detection from chest X-rays.
 
 ## 1. Experimental Intent & Motivation
