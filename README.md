@@ -62,13 +62,25 @@ Our experiments indicate that combining both objectives produces more stable rep
 
 ### Visual Explainability & Shortcut Learning (Grad-CAM)
 Despite the TCL_Full model achieving the most stable classification metrics, Grad-CAM visualization uncovered a critical limitation in low-data fine-tuning.
-| Good Localization | Shortcut Learning |
-| --- | --- |
-|  |  |
-| Left: Lung-focused activation. | Right: Shortcut-learning example. |
-Heatmap analysis revealed that the model sometimes localized its attention on the central heart shadow or the dark borders outside the thoracic cavity, rather than the lung parenchyma where actual TB lesions reside. This highlights a classic case of Shortcut Learning, where the model exploits dataset-specific visual biases rather than learning true medical pathology.
 
-Conclusion: High AUROC/F1 scores do not guarantee clinical reliability. Future work will evaluate whether lung-field constraints reduce shortcut learning while preserving label efficiency.
+<table>
+<tr>
+<td align="center">
+<img src="assets/images/gradcam_central_bias.png" width="400"><br>
+<b>Central Bias (Heart Shadow)</b>
+</td>
+<td align="center">
+<img src="assets/images/gradcam_boundary_bias.png" width="400"><br>
+<b>Boundary Bias (Background Shortcut)</b>
+</td>
+</tr>
+</table>
+
+Heatmap analysis revealed that the model rarely localized its attention on the lung parenchyma where actual TB lesions reside. Instead, it relied heavily on two shortcut patterns:
+1. Central Bias: Over-focusing on the heart shadow (as seen in the left image).
+2. Boundary Bias: Fixating on the clavicle or external black borders (as seen in the right image).
+
+Conclusion: High AUROC/F1 scores do not guarantee clinical reliability. This validates that in extremely low-data regimes (10%), TCL provides stability but is still vulnerable to Shortcut Learning. Future work must evaluate whether lung-field constraints (e.g., semantic segmentation masks) could guide the model's attention while preserving label efficiency.
 
 ## 5. Reproducibility
 
