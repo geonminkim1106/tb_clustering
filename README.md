@@ -2,7 +2,7 @@
 
 Independent Research Project
 
-A self-supervised medical imaging project investigating whether Twin Contrastive Learning improves label-efficient tuberculosis detection from chest X-rays.
+An adaptation study of the CGRclust Twin Contrastive Learning framework from DNA sequence clustering to chest X-ray tuberculosis classification.
 
 <p align="center">
   <img src="assets/images/pipeline.png" width="700">
@@ -16,18 +16,22 @@ The primary intent of this study is to:
 2. Dissect Twin-Contrastive Learning (Ablation Study): Deconstruct the TCL objective into its core components (Instance-level Contrastive Head and Cluster-level Contrastive Head) to understand their synergistic contributions.
 3. Ensure Explainability & Trust: Use Grad-CAM to verify if the model makes clinical decisions based on actual pathological features rather than dataset-specific artifacts.
 
+This motivated me to investigate whether a representation-learning framework originally developed for unlabeled DNA sequence clustering could transfer to chest X-ray analysis, where unlabeled data is abundant but expert annotations remain limited.
+
 ### Research Question
-Can Twin Contrastive Learning improve label-efficient tuberculosis detection from chest X-rays while producing more stable representations than conventional transfer learning?
+Can the Twin Contrastive Learning framework, originally developed for unlabeled DNA sequence clustering, be effectively adapted to chest X-ray tuberculosis classification under label-efficient settings?
 
 ## 2. Experimental Design
 
 ### Datasets
 | Dataset          | Purpose                 | Images  | Status |
 | ---              | ---                     | ---     | --- |
-| NIH ChestX-ray14 | SSL pretraining         | 112,120 | Completed |
+| NIH ChestX-ray14 | SSL pretraining         | 4,005 used (112,120 available) | Completed |
 | Shenzhen         | TB fine-tuning          | 662     | Completed |
 | Montgomery       | Cross-domain evaluation | 138     | Planned |
 
+- Data Curation: The NIH ChestX-ray14 dataset was first split at the patient level to prevent data leakage. AP/PA-view radiographs were selected from the training split, and a randomly sampled subset of 4,005 images was utilized for SSL pretraining under the available computational budget.
+  
 ### Methodology
 The implementation follows the CGRclust framework proposed by Alipour et al. (2024), adapting its Twin Contrastive Learning (TCL) architecture—including the Instance-level Contrastive Head (ICH) and Cluster-level Contrastive Head (CCH)—from DNA sequence clustering to chest X-ray tuberculosis classification in PyTorch. This project focuses on systematically evaluating the framework under label-efficient medical imaging settings.
 
@@ -64,7 +68,7 @@ Following the CGRclust framework, I implemented three experimental variants (ICH
 </p>
 <p align="center"><i>Figure 2. F1-Score Stability Comparison across different labeled-data regimes.</i></p>
 
-- Analysis: Although ImageNet transfer learning achieved higher mean performance in most low-label settings, TCL consistently exhibited lower F1-score variance across random seeds in the most data-constrained regime (10%). Given that the TCL backbone was pretrained on substantially fewer domain-specific chest X-ray images than the ImageNet baseline, these results suggest that domain-specific self-supervised pretraining may improve optimization stability under severe label scarcity. At the same time, the Grad-CAM analysis indicates that stability alone does not guarantee clinically meaningful attention, highlighting shortcut learning as an important limitation for future work.
+- Analysis: Although ImageNet transfer learning achieved higher mean performance in most low-label settings, TCL consistently exhibited lower F1-score variance across random seeds in the most data-constrained regime (10%). Given that the TCL backbone was pretrained on substantially fewer domain-specific chest X-ray images than the ImageNet baseline, these results suggest that domain-specific self-supervised pretraining may provide more consistent downstream performance across random seeds under severe label scarcity. At the same time, the Grad-CAM analysis indicates that stability alone does not guarantee clinically meaningful attention, highlighting shortcut learning as an important limitation for future work.
 
 ### B. Ablation Study Results (10% Labeled Data, 3-Seed Average)
 | Model Architecture | AUROC (Mean ± Std) | F1-Score (Mean ± Std) |
@@ -77,8 +81,8 @@ Following the CGRclust framework, I implemented three experimental variants (ICH
 
 ### The Synergy of ICH and CCH
 The experimental results suggest that combining both objectives produces more stable representations.
-- The CCH Collapse: When pre-training with CCH alone, the model exhibited an immediate mathematical collapse from the first epoch, with the loss plateauing at ln(1024) ≈ 6.93. This suggests that the cluster-level objective alone failed to provide a meaningful optimization signal for representation learning. Although CCH-Only achieved a relatively high AUROC during downstream fine-tuning, its substantially lower F1-score and higher variance (±0.0621) suggest that the resulting feature space was degenerate and unlikely to support reliable clinical decision-making.
-- TCL_Full Superiority: The ICH provides the essential baseline feature space, while CCH acts as a regularizer that groups similar pathologies.
+- The CCH Collapse: The CCH-only pretraining exhibited a loss plateau at approximately ln(1024)≈6.93 from the beginning of training, suggesting that the cluster-level objective alone did not provide an effective learning signal under the current implementation. Although CCH-only achieved relatively high AUROC after fine-tuning, its lower F1-score and higher seed variance indicate that AUROC alone may not fully characterize the quality and consistency of the learned representation.
+- TCL_Full Superiority: The ICH provides the essential baseline feature space, while CCH acts as a complementary objective that constrains the learned representation.
 
 ### Visual Explainability & Shortcut Learning (Grad-CAM)
 Despite the TCL_Full model achieving the most stable classification metrics, Grad-CAM visualization uncovered a critical limitation in low-data fine-tuning.
@@ -100,7 +104,7 @@ Heatmap analysis revealed that the model frequently localized its attention on t
 1. Central Bias: Over-focusing on the heart shadow (as seen in the left image).
 2. Boundary Bias: Fixating on the clavicle or external black borders (as seen in the right image).
 
-- Conclusion: High AUROC/F1 scores do not guarantee clinical reliability. This validates that in extremely low-data regimes (10%), TCL provides stability but is still vulnerable to Shortcut Learning. Future work must evaluate whether lung-field constraints (e.g., semantic segmentation masks) could guide the model's attention while preserving label efficiency.
+- Conclusion: High AUROC/F1 scores do not guarantee clinical reliability. These findings suggest that, in this low-data setting (10%), TCL provides more consistent downstream performance but remains vulnerable to shortcut learning. Future work must evaluate whether lung-field constraints (e.g., semantic segmentation masks) could guide the model's attention while preserving label efficiency.
 
 ## Limitations
 - The downstream TB datasets are relatively small.
@@ -160,3 +164,4 @@ python gradcam_vis.py
 
 ## 8. References
 1. Alipour, F., Hill, K. A., & Kari, L. (2024). CGRclust: Chaos Game Representation for twin contrastive clustering of unlabelled DNA sequences. BMC Genomics, 25, Article 1214. https://doi.org/10.1186/s12864-024-11135-y
+2. Alipour, F. (2024). https://github.com/fatemehalipour/CGRclust (implementation reference).
