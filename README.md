@@ -4,6 +4,8 @@ Independent Research Project
 
 A self-supervised medical imaging project investigating whether Twin Contrastive Learning improves label-efficient tuberculosis detection from chest X-rays.
 
+<img src="assets/images/pipeline.png" width="700">
+
 ## 1. Experimental Intent & Motivation
 In the medical imaging domain, acquiring large-scale expert-annotated data is highly expensive and time-consuming. While transfer learning from ImageNet is a standard practice, it often suffers from severe domain shift and class-prediction bias when applied to CXR tasks with minimal labeled data.
 The primary intent of this study is to:
