@@ -29,6 +29,8 @@ Can Twin Contrastive Learning improve label-efficient tuberculosis detection fro
 | Montgomery       | Cross-domain evaluation | 138     | Planned |
 
 ### Methodology
+The implementation follows the CGRclust framework proposed by Alipour et al. (2024), adapting its Twin Contrastive Learning (TCL) architecture—including the Instance-level Contrastive Head (ICH) and Cluster-level Contrastive Head (CCH)—from DNA sequence clustering to chest X-ray tuberculosis classification in PyTorch. This project focuses on systematically evaluating the framework under label-efficient medical imaging settings.
+
 - Backbone: Xception (via timm library).
 - Domain-Specific Augmentation: Custom data augmentation pipeline preventing extreme geometric distortions
   - Rotation & Translation: RandomAffine(degrees=5, translate=(0.02, 0.02)) to simulate slight patient positioning shifts.
@@ -38,7 +40,7 @@ Can Twin Contrastive Learning improve label-efficient tuberculosis detection fro
 - Multi-Seed Validation: All downstream evaluations are cross-validated across 3 random seeds (42, 77, 123) to observe decision boundary variance.
 
 ### Ablation Strategy
-I decoupled the loss function to train three separate pre-trained models for 50 epochs:
+Following the CGRclust framework, I implemented three experimental variants (ICH-only, CCH-only, and the full TCL objective) for a controlled ablation study.
 1. ICH-Only: Learns instance discrimination.
 2. CCH-Only: Learns cluster-level representation.
 3. TCL-Full (ICH + CCH): Learns both simultaneously.
@@ -49,13 +51,13 @@ I decoupled the loss function to train three separate pre-trained models for 50 
 | Data Fraction | Model               | AUROC (Mean ± Std) | F1-Score (Mean ± Std) |
 | ---           | ---                 | ---                | ---             |
 | 10%           | Baseline (ImageNet) | 0.8422 ± 0.0138    | 0.7139 ± 0.0627 |
-|               | TCL (This Implementation)          | 0.7729 ± 0.0316    | 0.6639 ± 0.0276 |
+|               | TCL-CXR (This Implementation)          | 0.7729 ± 0.0316    | 0.6639 ± 0.0276 |
 | 25%           | Baseline (ImageNet) | 0.8740 ± 0.0153    | 0.7971 ± 0.0131 |
-|               | TCL (This Implementation)          | 0.8038 ± 0.0224    | 0.7638 ± 0.0227 |
+|               | TCL-CXR (This Implementation)          | 0.8038 ± 0.0224    | 0.7638 ± 0.0227 |
 | 50%           | Baseline (ImageNet) | 0.8938 ± 0.0052    | 0.8311 ± 0.0050 |
-|               | TCL (This Implementation)          | 0.8756 ± 0.0132    | 0.8116 ± 0.0048 |
+|               | TCL-CXR (This Implementation)          | 0.8756 ± 0.0132    | 0.8116 ± 0.0048 |
 | 100%          | Baseline (ImageNet) | 0.9179 ± 0.0029    | 0.8563 ± 0.0084 |
-|               | TCL (This Implementation)          | 0.9186 ± 0.0153    | 0.8397 ± 0.0125 |
+|               | TCL-CXR (This Implementation)          | 0.9186 ± 0.0153    | 0.8397 ± 0.0125 |
 
 <p align="center">
   <img src="assets/images/performance_curve.png" width="650">
@@ -75,7 +77,7 @@ I decoupled the loss function to train three separate pre-trained models for 50 
 
 ### The Synergy of ICH and CCH
 The experimental results suggest that combining both objectives produces more stable representations.
-- The CCH Collapse: When pre-training with CCH alone, the model exhibited an immediate mathematical collapse from the first epoch, with the loss plateauing at ln(1024)≈6.93. This suggests that the cluster-level objective alone failed to provide a meaningful optimization signal for representation learning. Although CCH-Only achieved a relatively high AUROC during downstream fine-tuning, its substantially lower F1-score and higher variance (±0.0621) suggest that the resulting feature space was degenerate and unlikely to support reliable clinical decision-making.
+- The CCH Collapse: When pre-training with CCH alone, the model exhibited an immediate mathematical collapse from the first epoch, with the loss plateauing at ln(1024) ≈ 6.93. This suggests that the cluster-level objective alone failed to provide a meaningful optimization signal for representation learning. Although CCH-Only achieved a relatively high AUROC during downstream fine-tuning, its substantially lower F1-score and higher variance (±0.0621) suggest that the resulting feature space was degenerate and unlikely to support reliable clinical decision-making.
 - TCL_Full Superiority: The ICH provides the essential baseline feature space, while CCH acts as a regularizer that groups similar pathologies.
 
 ### Visual Explainability & Shortcut Learning (Grad-CAM)
@@ -155,3 +157,6 @@ python finetune_ablation.py
 python gradcam_vis.py
 
 ```
+
+## 8. References
+1. Alipour, F., Hill, K. A., & Kari, L. (2024). CGRclust: Chaos Game Representation for twin contrastive clustering of unlabelled DNA sequences. BMC Genomics, 25, Article 1214. https://doi.org/10.1186/s12864-024-11135-y
