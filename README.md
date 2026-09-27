@@ -93,7 +93,7 @@ Heatmap analysis revealed that the model rarely localized its attention on the l
 1. Central Bias: Over-focusing on the heart shadow (as seen in the left image).
 2. Boundary Bias: Fixating on the clavicle or external black borders (as seen in the right image).
 
-Conclusion: High AUROC/F1 scores do not guarantee clinical reliability. This validates that in extremely low-data regimes (10%), TCL provides stability but is still vulnerable to Shortcut Learning. Future work must evaluate whether lung-field constraints (e.g., semantic segmentation masks) could guide the model's attention while preserving label efficiency.
+- Conclusion: High AUROC/F1 scores do not guarantee clinical reliability. This validates that in extremely low-data regimes (10%), TCL provides stability but is still vulnerable to Shortcut Learning. Future work must evaluate whether lung-field constraints (e.g., semantic segmentation masks) could guide the model's attention while preserving label efficiency.
 
 ## 5. Repository Structure
 ```text
