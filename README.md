@@ -53,7 +53,11 @@ I decoupled the loss function to train three separate pre-trained models for 50 
 |               | TCL (Ours)          | 0.8756 ± 0.0132    | 0.8116 ± 0.0048 |
 | 100%          | Baseline (ImageNet) | 0.9179 ± 0.0029    | 0.8563 ± 0.0084 |
 |               | TCL (Ours)          | 0.9186 ± 0.0153    | 0.8397 ± 0.0125 |
-Analysis: While ImageNet achieved higher mean performance in most low-label settings, TCL generally produced more consistent optimization in F1-score across random seeds, particularly in the most data-constrained regime.
+
+<br>
+<img src="assets/images/performance_curve.png" width="600">
+
+Analysis: Although ImageNet transfer learning achieved higher mean performance in most low-label settings, TCL consistently exhibited lower F1-score variance across random seeds in the most data-constrained regime (10%). Given that the TCL backbone was pretrained on substantially fewer domain-specific chest X-ray images than the ImageNet baseline, these results suggest that domain-specific self-supervised pretraining may improve optimization stability under severe label scarcity. At the same time, the Grad-CAM analysis indicates that stability alone does not guarantee clinically meaningful attention, highlighting shortcut learning as an important limitation for future work.
 
 ### B. Ablation Study Results (10% Labeled Data, 3-Seed Average)
 | Model Architecture | AUROC (Mean ± Std) | F1-Score (Mean ± Std) |
