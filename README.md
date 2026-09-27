@@ -1,10 +1,13 @@
 # TCL-CXR
 
--Independent Research Project
+Independent Research Project
 
 A self-supervised medical imaging project investigating whether Twin Contrastive Learning improves label-efficient tuberculosis detection from chest X-rays.
 
-<img src="assets/images/pipeline.png" width="700">
+<p align="center">
+  <img src="assets/images/pipeline.png" width="700">
+</p>
+<p align="center"><i>Figure 1. TCL-CXR pretraining and downstream evaluation pipeline.</i></p>
 
 ## 1. Experimental Intent & Motivation
 In the medical imaging domain, acquiring large-scale expert-annotated data is highly expensive and time-consuming. While transfer learning from ImageNet is a standard practice, it often suffers from severe domain shift and class-prediction bias when applied to CXR tasks with minimal labeled data.
@@ -19,18 +22,18 @@ Can Twin Contrastive Learning improve label-efficient tuberculosis detection fro
 ## 2. Experimental Design
 
 ### Datasets
-| Dataset          | Purpose                 | Images  |
-| ---              | ---                     | ---     |
-| NIH ChestX-ray14 | SSL pretraining         | 112,120 |
-| Shenzhen         | TB fine-tuning          | 662     |
-| Montgomery       | Cross-domain evaluation | 138     |
+| Dataset          | Purpose                 | Images  | Status |
+| ---              | ---                     | ---     | --- |
+| NIH ChestX-ray14 | SSL pretraining         | 112,120 | Completed |
+| Shenzhen         | TB fine-tuning          | 662     | Completed |
+| Montgomery       | Cross-domain evaluation | 138     | Planned |
 
 ### Methodology
 - Backbone: Xception (via timm library).
 - Domain-Specific Augmentation: Custom data augmentation pipeline preventing extreme geometric distortions
   - Rotation & Translation: RandomAffine(degrees=5, translate=(0.02, 0.02)) to simulate slight patient positioning shifts.
   - Lesion Preservation Crop: RandomResizedCrop(scale: 0.8–1.0) strictly bounded to prevent cutting out peripheral lung nodules.
-  - Exposure Simulation: ColorJitter(brightness=0.2, contrast=0.2, p=0.5) applied with a 50% probability.
+  - Intensity Augmentation: ColorJitter(brightness=0.2, contrast=0.2, p=0.5) applied with a 50% probability.
   - Sensor Noise Simulation: GaussianBlur(kernel_size=3, p=0.5) applied with a 50% probability.
 - Multi-Seed Validation: All downstream evaluations are cross-validated across 3 random seeds (42, 77, 123) to observe decision boundary variance.
 
@@ -54,8 +57,10 @@ I decoupled the loss function to train three separate pre-trained models for 50 
 | 100%          | Baseline (ImageNet) | 0.9179 ± 0.0029    | 0.8563 ± 0.0084 |
 |               | TCL (Ours)          | 0.9186 ± 0.0153    | 0.8397 ± 0.0125 |
 
-<br>
-<img src="assets/images/performance_curve.png" width="600">
+<p align="center">
+  <img src="assets/images/performance_curve.png" width="650">
+</p>
+<p align="center"><i>Figure 2. AUROC across different labeled-data regimes.</i></p>
 
 - Analysis: Although ImageNet transfer learning achieved higher mean performance in most low-label settings, TCL consistently exhibited lower F1-score variance across random seeds in the most data-constrained regime (10%). Given that the TCL backbone was pretrained on substantially fewer domain-specific chest X-ray images than the ImageNet baseline, these results suggest that domain-specific self-supervised pretraining may improve optimization stability under severe label scarcity. At the same time, the Grad-CAM analysis indicates that stability alone does not guarantee clinically meaningful attention, highlighting shortcut learning as an important limitation for future work.
 
@@ -95,6 +100,10 @@ Heatmap analysis revealed that the model rarely localized its attention on the l
 
 - Conclusion: High AUROC/F1 scores do not guarantee clinical reliability. This validates that in extremely low-data regimes (10%), TCL provides stability but is still vulnerable to Shortcut Learning. Future work must evaluate whether lung-field constraints (e.g., semantic segmentation masks) could guide the model's attention while preserving label efficiency.
 
+## Limitations
+- The downstream TB datasets are relatively small.
+- Shortcut learning remained observable despite improved representation stability.
+
 ## 5. Repository Structure
 ```text
 TCL-CXR/
@@ -110,8 +119,18 @@ TCL-CXR/
 ├── finetune_ablation.py
 ├── gradcam_vis.py
 └── README.md
+```
 
-## 6. Reproducibility
+## 7. Future Work
+
+Planned extensions of this project include:
+
+- Cross-domain evaluation using the Montgomery TB dataset.
+- Lung-field constrained contrastive learning with segmentation masks.
+- UMAP-based representation analysis across clinical metadata.
+- Comparison with additional SSL baselines such as MoCo v2.
+
+## 8. Reproducibility
 
 ### Environment
 - Python 3.11
