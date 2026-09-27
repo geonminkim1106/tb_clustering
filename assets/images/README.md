@@ -1,1 +1,1 @@
-
+Create assets/images folder
